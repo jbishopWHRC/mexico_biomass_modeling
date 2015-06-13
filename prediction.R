@@ -62,7 +62,7 @@ img[img == 0] <- NA
 # Make a vector by replacing segment ids with the prediction
 img.match <- as.numeric(out$pred[match(img, out[,1])])
 # Set the no data value for the output
-img.match[is.na(img.match) == TRUE] <- NAvalue(img.out) # Or some other value like -1
+img.match[is.na(img.match) == TRUE] <- 0 # Or some other value like -1
 # Set the values of the output raster
 img.out <- setValues(img.out, img.match)
 dataType(img.out) <- 'Byte'
