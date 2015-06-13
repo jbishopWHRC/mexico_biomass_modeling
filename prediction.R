@@ -1,13 +1,11 @@
 # Libraries
 library(randomForest)
 
-seg_csv <- '/mnt/t/testing/mexico/biomass/alos/biomass_modeling/workshop_data/210_630_20070623_FBD_ALPSRP075150630_41147/210_630_20070623_FBD_ALPSRP075150630_41147_s1_g15_gamma_dB_s0n_hhhvzratio_seg_7_0.1_0.9_predictors.csv'
-outlut_csv <- '/mnt/t/testing/mexico/biomass/alos/biomass_modeling/210_630_20070623_FBD_ALPSRP075150630_41147_carbon.csv'
-seg_raster <- '/mnt/t/testing/mexico/biomass/alos/biomass_modeling/workshop_data/210_630_20070623_FBD_ALPSRP075150630_41147/210_630_20070623_FBD_ALPSRP075150630_41147_s1_g15_gamma_dB_s0n_hhhvzratio_seg_7_0.1_0.9.tif'
-out_raster <- '/mnt/t/testing/mexico/biomass/alos/biomass_modeling/210_630_20070623_FBD_ALPSRP075150630_41147_carbon.tif'
-
-
-  
+#seg_csv <- '/mnt/t/testing/mexico/biomass/alos/biomass_modeling/workshop_data/210_630_20070623_FBD_ALPSRP075150630_41147/210_630_20070623_FBD_ALPSRP075150630_41147_s1_g15_gamma_dB_s0n_hhhvzratio_seg_7_0.1_0.9_predictors.csv'
+#outlut_csv <- '/mnt/t/testing/mexico/biomass/alos/biomass_modeling/210_630_20070623_FBD_ALPSRP075150630_41147_carbon.csv'
+#seg_raster <- '/mnt/t/testing/mexico/biomass/alos/biomass_modeling/workshop_data/210_630_20070623_FBD_ALPSRP075150630_41147/210_630_20070623_FBD_ALPSRP075150630_41147_s1_g15_gamma_dB_s0n_hhhvzratio_seg_7_0.1_0.9.tif'
+#out_raster <- '/mnt/t/testing/mexico/biomass/alos/biomass_modeling/210_630_20070623_FBD_ALPSRP075150630_41147_carbon.tif'
+ 
 # Get the parameters from the --args commandline (or R qsub script equivalent)
 args <- commandArgs(trailingOnly=TRUE)
 modelfile <- toString(args[1])
@@ -15,6 +13,8 @@ seg_csv   <- toString(args[2])
 outlut_csv   <- toString(args[3])
 seg_raster <- toString(args[4])
 out_raster <- toString(args[5])
+
+print(seg_csv)
 
 # Load the model
 load(modelfile) # model object is called "rf"
