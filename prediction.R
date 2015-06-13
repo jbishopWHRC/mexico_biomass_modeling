@@ -25,14 +25,15 @@ segs <- read.csv(seg_csv, as.is=TRUE, stringsAsFactors=FALSE)
 segs <- subset(segs, segs$segment_id != 0)
 
 # Remove segments that have NA in the predictors
-badsegs <- unique(c(segs$segment_id[is.na(segs$hh_mean)], segs$segment_id[is.na(segs$hv_mean)], segs$segment_id[is.na(segs$vcf_mean)], segs$segment_id[is.na(segs$elev_mean)]))
-segs <- subset(segs, segs$segment_id %in% badsegs == FALSE)
+#badsegs <- unique(c(segs$segment_id[is.na(segs$hh_mean)], segs$segment_id[is.na(segs$hv_mean)], segs$segment_id[is.na(segs$vcf_mean)], segs$segment_id[is.na(segs$elev_mean)]))
+#segs <- subset(segs, segs$segment_id %in% badsegs == FALSE)
 
 # Get the model predictor names
-prednames <- names(rf$importance[,1])
+#prednames <- names(rf$importance[,1])
 
 # prepare the predictor stack 
-pred <- segs[prednames]
+#pred <- segs[prednames]
+pred <- data.frame(as.numeric(segs$hh_mean), as.numeric(segs$hv_mean), as.numeric(segs$vcf_mean), as.numeric(segs$elev_mean))
 
 # Prediction
 predicted_carbon <- predict(rf,pred)
@@ -56,7 +57,7 @@ img <- getValues(img.out)
 img[img == 0] <- NA
 # Set the bad segments to NA
 #is.na(img) <- img[badsegs]
-img[img %in% badsegs] <- NA
+#img[img %in% badsegs] <- NA
 # Make a vector by replacing segment ids with the prediction
 img.match <- as.numeric(out$pred[match(img, out[,1])])
 # Set the no data value for the output
