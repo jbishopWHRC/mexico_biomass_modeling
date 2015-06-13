@@ -112,6 +112,8 @@ stack <- data.frame(hh_mean, hv_mean, vcf_mean, elev_mean)
 rf <- randomForest(carbono_arboles_tpha ~ ., data=stack, ntree=200, xtest=val.stk, ytest=sub.val$carbono_arboles_tpha, importance = T)
 detach(sub.train)
 
+save('rf', file='workshop_model.RData')
+
 varImpPlot(rf, type=1)
 
 # Some model evaluation
@@ -126,13 +128,3 @@ r2.val <- round(1 - sum((sub.val$carbono_arboles_tpha - rf$test$predicted)^2)/su
 adj.r2.val <- round(1 - (1 - r2.val)*(n.val - 1)/ (n.val - ncol(val.stk) - 1), digits=2)
 rmse.val <- round(sqrt(sum((sub.val$carbono_arboles_tpha-rf$test$predicted)^2)/n.val), digits=2)
 
-# Replace this wrong crap below with proper non-crap
-
-sub$pbio <- rf$pred
-sub$pbiomod <- predict(rf, stack)
-cor.mod <- cor(sub$carbono_arboles_tpha,predict(rf,stack))
-cor.test <- cor(sub$carbono_arboles_tpha,rf$pred)
-rmse.mod <- sqrt(sum((sub$carbono_arboles_tpha-predict(rf,stack))^2)/length(sub$carbono_arboles_tpha))
-rmse.test <- sqrt(sum((sub$carbono_arboles_tpha-rf$pred)^2)/length(sub$carbono_arboles_tpha))
-oob.h.cor <- cor.test
-oob.h.rmse <- rmse.test
