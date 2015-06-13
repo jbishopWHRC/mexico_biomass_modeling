@@ -34,6 +34,7 @@ segs <- subset(segs, segs$segment_id != 0)
 # prepare the predictor stack 
 #pred <- segs[prednames]
 pred <- data.frame(as.numeric(segs$hh_mean), as.numeric(segs$hv_mean), as.numeric(segs$vcf_mean), as.numeric(segs$elev_mean))
+names(pred) <- c('hh_mean', 'hv_mean', 'vcf_mean', 'elev_mean')
 
 # Prediction
 predicted_carbon <- predict(rf,pred)
