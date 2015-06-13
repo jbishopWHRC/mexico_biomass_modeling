@@ -67,4 +67,4 @@ img.match[is.na(img.match) == TRUE] <- 0 # Or some other value like -1
 img.out <- setValues(img.out, img.match)
 dataType(img.out) <- 'INT1U'
 # Write out the image
-writeRaster(img.out, filename=out_raster, format="GTiff", dataType="INT1U", overwrite=T)
+writeRaster(img.out, filename=out_raster, format="GTiff", datatype="INT1U", overwrite=T)
