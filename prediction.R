@@ -19,7 +19,7 @@ out_raster <- toString(args[5])
 load(modelfile) # model object is called "rf"
 
 # Get the segment data as csv file
-segs <- read.csv(seg_csv)
+segs <- read.csv(seg_csv, as.is=TRUE)
 # eliminate background 0
 segs <- subset(segs, segs$segment_id != 0)
 
