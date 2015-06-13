@@ -56,7 +56,7 @@ img <- getValues(img.out)
 img[img == 0] <- NA
 # Set the bad segments to NA
 #is.na(img) <- img[badsegs]
-img[img == badsegs] <- NA
+img[img %in% badsegs] <- NA
 # Make a vector by replacing segment ids with the prediction
 img.match <- as.numeric(out$pred[match(img, out[,1])])
 # Set the no data value for the output
