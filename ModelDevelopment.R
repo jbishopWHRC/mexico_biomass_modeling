@@ -109,7 +109,7 @@ detach(sub.val)
 
 attach(sub.train)
 stack <- data.frame(hh_mean, hv_mean, vcf_mean, elev_mean)
-rf <- randomForest(carbono_arboles_tpha ~ ., data=stack, ntree=200, xtest=val.stk, ytest=sub.val$carbono_arboles_tpha, importance = T)
+rf <- randomForest(carbono_arboles_tpha ~ ., data=stack, ntree=200, xtest=val.stk, ytest=sub.val$carbono_arboles_tpha, importance = T, keep.forest = TRUE)
 detach(sub.train)
 
 save('rf', file='workshop_model.RData')
