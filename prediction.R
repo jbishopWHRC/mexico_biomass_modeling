@@ -1,11 +1,12 @@
 # Libraries
 library(randomForest)
 
-#seg_csv <- '/mnt/t/testing/mexico/biomass/alos/biomass_modeling/workshop_data/168_380_20080901_FBD_ALPSRP138740380_183304/168_380_20080901_FBD_ALPSRP138740380_183304_s1_g15_gamma_dB_s0n_hhhvzratio_seg_7_0.1_0.9_predictors.csv'
-#outlut_csv <- '/mnt/t/testing/mexico/biomass/alos/biomass_modeling/168_380_20080901_FBD_ALPSRP138740380_183304_carbon.csv'
-#seg_raster <- '/mnt/t/testing/mexico/biomass/alos/biomass_modeling/workshop_data/168_380_20080901_FBD_ALPSRP138740380_183304/168_380_20080901_FBD_ALPSRP138740380_183304_s1_g15_gamma_dB_s0n_hhhvzratio_seg_7_0.1_0.9.tif'
-#out_raster <- '/mnt/t/testing/mexico/biomass/alos/biomass_modeling/168_380_20080901_FBD_ALPSRP138740380_183304_carbon.tif'
-  
+seg_csv <- '/mnt/t/testing/mexico/biomass/alos/biomass_modeling/workshop_data/210_630_20070623_FBD_ALPSRP075150630_41147/210_630_20070623_FBD_ALPSRP075150630_41147_s1_g15_gamma_dB_s0n_hhhvzratio_seg_7_0.1_0.9_predictors.csv'
+outlut_csv <- '/mnt/t/testing/mexico/biomass/alos/biomass_modeling/210_630_20070623_FBD_ALPSRP075150630_41147_carbon.csv'
+seg_raster <- '/mnt/t/testing/mexico/biomass/alos/biomass_modeling/workshop_data/210_630_20070623_FBD_ALPSRP075150630_41147/210_630_20070623_FBD_ALPSRP075150630_41147_s1_g15_gamma_dB_s0n_hhhvzratio_seg_7_0.1_0.9.tif'
+out_raster <- '/mnt/t/testing/mexico/biomass/alos/biomass_modeling/210_630_20070623_FBD_ALPSRP075150630_41147_carbon.tif'
+
+
   
 # Get the parameters from the --args commandline (or R qsub script equivalent)
 args <- commandArgs(trailingOnly=TRUE)
@@ -22,6 +23,10 @@ load(modelfile) # model object is called "rf"
 segs <- read.csv(seg_csv, as.is=TRUE, stringsAsFactors=FALSE)
 # eliminate background 0
 segs <- subset(segs, segs$segment_id != 0)
+
+# Remove segments that have NA in the predictors
+badsegs <- unique(c(segs$segment_id[is.na(segs$hh_mean)], segs$segment_id[is.na(segs$hv_mean)], segs$segment_id[is.na(segs$vcf_mean)], segs$segment_id[is.na(segs$elev_mean)]))
+segs <- subset(segs, segs$segment_id %in% badsegs == FALSE)
 
 # Get the model predictor names
 prednames <- names(rf$importance[,1])
@@ -47,7 +52,11 @@ img.out <- raster(seg_raster)
 # Get the values as a vector
 img <- getValues(img.out)
 # Set the boundary segment to NA
-is.na(img) <- img == 0
+#is.na(img) <- img == 0
+img[img == 0] <- NA
+# Set the bad segments to NA
+#is.na(img) <- img[badsegs]
+img[img == badsegs] <- NA
 # Make a vector by replacing segment ids with the prediction
 img.match <- as.numeric(out$pred[match(img, out[,1])])
 # Set the no data value for the output
