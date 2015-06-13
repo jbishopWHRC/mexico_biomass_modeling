@@ -65,5 +65,6 @@ img.match <- as.numeric(out$pred[match(img, out[,1])])
 img.match[is.na(img.match) == TRUE] <- NAvalue(img.out) # Or some other value like -1
 # Set the values of the output raster
 img.out <- setValues(img.out, img.match)
+dataType(img.out) <- 'Byte'
 # Write out the image
 writeRaster(img.out, filename=out_raster, format="GTiff", dataType="Byte", overwrite=T)
