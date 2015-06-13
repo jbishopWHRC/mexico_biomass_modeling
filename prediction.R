@@ -39,7 +39,7 @@ names(pred) <- c('hh_mean', 'hv_mean', 'vcf_mean', 'elev_mean')
 # Prediction
 predicted_carbon <- predict(rf,pred)
 
-out <- data.frame(segs$segment_id,predicted_carbon)
+out <- data.frame(segs$segment_id,round(predicted_carbon))
 names(out) <- c("segid","pred")
 options(scipen=10)
 write.csv(out,file=outlut_csv,row.names=FALSE,quote=FALSE)
@@ -66,4 +66,4 @@ img.match[is.na(img.match) == TRUE] <- NAvalue(img.out) # Or some other value li
 # Set the values of the output raster
 img.out <- setValues(img.out, img.match)
 # Write out the image
-writeRaster(img.out, filename=out_raster, format="GTiff", dataType="FLT4S", overwrite=T)
+writeRaster(img.out, filename=out_raster, format="GTiff", dataType="Byte", overwrite=T)
