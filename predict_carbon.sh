@@ -5,7 +5,7 @@
 # AUTHOR: Jesse Bishop
 # DATE: 2013-10-21
 #
-cd /mnt/t/testing/mexico/biomass/alos/biomass_modeling/workshop_data/modeling
+cd /mnt/t/testing/mexico/biomass/alos/biomass_modeling/workshop_data/mexico_biomass_modeling
 
 if [ "$#" != "1" ]; then
     echo "USAGE ${0##*/} id"
