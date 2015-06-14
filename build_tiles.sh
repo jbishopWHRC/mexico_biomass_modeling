@@ -17,7 +17,7 @@ resample=average
 # Buffer pixel for working mosaic 
 bufpix=5
 
-if [ $# -lt 8 ]
+if [ $# -lt 6 ]
 then
     echo
     echo WHIPS - Woods Hole Image Processing System
