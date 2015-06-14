@@ -51,6 +51,8 @@ dst_nodata=0
 inpath=$5
 optfile=$6
 
+echo $@
+
 #Check for valid inputs
 MOPTIONS="SIMPLE BLEND FEATHER"
 if [[ $MOPTIONS == *${mosaic_option}* ]] 
