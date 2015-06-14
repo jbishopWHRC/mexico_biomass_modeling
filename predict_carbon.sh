@@ -5,17 +5,18 @@
 # AUTHOR: Jesse Bishop
 # DATE: 2013-10-21
 #
-cd /mnt/t/testing/mexico/biomass/alos/biomass_modeling/workshop_data/mexico_biomass_modeling
 
-if [ "$#" != "1" ]; then
-    echo "USAGE ${0##*/} id"
-    echo "EXAMPLE: ${0##*/} 12345"
+if [ "$#" != "2" ]; then
+    echo "USAGE ${0##*/} id code_directory"
+    echo "EXAMPLE: ${0##*/} 12345 /mnt/t/code/project_repo"
     echo
     exit
 fi
 
 seg_csv=$1
+codedir=$2
 segdir=$(dirname $seg_csv)
+cd $codedir
 
 # Calculate some additional parameters
 modelfile="workshop_model.RData"
