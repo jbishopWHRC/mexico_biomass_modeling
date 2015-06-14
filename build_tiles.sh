@@ -222,7 +222,7 @@ gdal_edit.py -mo "AREA_OR_POINT=Area" mosaic.tif
 #############################################################################################
 # Write output
 echo "Writing output file."
-gdalwarp -srcnodata $src_nodata -dstnodata $dst_nodata -r near -te $ulx $lry $lrx $uly -tr $tr $tr mosaic.tif ${outname} 
+gdalwarp -co "COMPRESS=DEFLATE" -srcnodata $src_nodata -dstnodata $dst_nodata -r near -te $ulx $lry $lrx $uly -tr $tr $tr mosaic.tif ${outname} 
 # Make overviews 
 echo "Adding overviews."
 gdaladdo -r average -ro ${outname} 2 4 8 16
