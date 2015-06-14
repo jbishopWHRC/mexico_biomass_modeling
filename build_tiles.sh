@@ -195,7 +195,7 @@ do
     do
         let s+=1
         echo "Working on file $i ($s of $total_scenes)"
-        if [ -f $i ]
+        if [ -f ${inpath}/$i ]
         then
             gdalwarp  -r $resample -tr $tr $tr ${inpath}/$i -srcnodata $src_nodata -dstnodata $dst_nodata tmp.tif
             gdalwarp  -srcnodata 0 -dstnodata 0 tmp.tif imfile.tif
