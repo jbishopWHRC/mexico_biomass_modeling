@@ -168,7 +168,7 @@ total_scenes=$(wc -l ${optfile} | awk -F ' ' '{print $1}')
 ############################################################################################
 # Generate an empty output tile to mosaic into 
 #Use the first found file as a dummy to determine number of bands for mosaicking
-dummy=$(cat $optfile | head -1 | awk -F ',' '{ print $3 }')
+dummy=${inpath}/$(cat $optfile | head -1 | awk -F ',' '{ print $3 }')
 
 if [ ! -f $dummy ]
 then
@@ -195,7 +195,7 @@ do
         echo "Working on file $i ($s of $total_scenes)"
         if [ -f $i ]
         then
-            gdalwarp  -r $resample -tr $tr $tr $i -srcnodata $src_nodata -dstnodata $dst_nodata tmp.tif
+            gdalwarp  -r $resample -tr $tr $tr ${inpath}/$i -srcnodata $src_nodata -dstnodata $dst_nodata tmp.tif
             gdalwarp  -srcnodata 0 -dstnodata 0 tmp.tif imfile.tif
           /bin/rm tmp.tif
         fi
