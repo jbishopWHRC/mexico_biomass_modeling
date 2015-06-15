@@ -49,16 +49,16 @@ write.csv(out,file=outlut_csv,row.names=FALSE,quote=FALSE)
 
 # Load the raster package
 require(raster)
+
 # Load the output segment raster 
 img.out <- raster(seg_raster)
-# Get the values as a vector
+
+# Read the values of the segment raster as a vector
 img <- getValues(img.out)
+
 # Set the boundary segment to NA
-#is.na(img) <- img == 0
 img[img == 0] <- NA
-# Set the bad segments to NA
-#is.na(img) <- img[badsegs]
-#img[img %in% badsegs] <- NA
+
 # Make a vector by replacing segment ids with the prediction
 img.match <- as.integer(out$pred[match(img, out[,1])])
 # Set the no data value for the output
