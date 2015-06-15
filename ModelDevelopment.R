@@ -12,7 +12,8 @@ library(sampling)
 # Set your working directory and read the training data csv
 setwd('/Users/jbishop/Documents/Projects/858_MREDD/Workshops/201506_Biomass_CONAFOR/mexico_biomass_modeling')
 d <- read.csv('workshop_training_data.csv')
-
+sub <- d
+dim(sub)[1]
 
 # Take a look at the relationships
 plot(d$carbono_arboles_tpha, d$hv_mean)
@@ -20,13 +21,17 @@ plot(d$carbono_arboles_tpha, d$vcf_mean)
 
 ## Data Filtering
 # Remove plots with steep slopes
-sub <- subset(d, slope_mean < 15) # degrees (or 15%)
+sub <- subset(sub, slope_mean < 15) # degrees (or 15%)
+dim(sub)[1]
 # Remove plots with layover/shadow
 sub <- subset(sub, lsmask_mean = 0)
+dim(sub)[1]
 # Remove plots with 0 carbon
 sub <- subset(sub, carbono_arboles_tpha != 0)
+dim(sub)[1]
 # Remove plots where VCF data didn't cover the whole plot (cloud, shadow, water, etc)
 sub <- subset(sub, sub$num_pixels == sub$num_masked_pixels)
+dim(sub)[1]
 
 # Take a look at the relationships
 plot(sub$carbono_arboles_tpha, sub$hv_mean)
@@ -58,6 +63,7 @@ for (i in unique(sub$type_code)){
 }
 
 sub <- subset(sub, ! folio %in% f)
+dim(sub)[1]
 
 plot(sub$carbono_arboles_tpha, sub$hv_mean)
 plot(sub$carbono_arboles_tpha, sub$vcf_mean)
@@ -125,7 +131,7 @@ stack <- data.frame(hh_mean, hv_mean, vcf_mean, elev_mean)
 rf <- randomForest(carbono_arboles_tpha ~ ., data=stack, ntree=200, xtest=val.stk, ytest=sub.val$carbono_arboles_tpha, importance = T, keep.forest = TRUE)
 detach(sub.train)
 
-save('rf', file='workshop_model.RData')
+save('rf', file='workshop_model_20150615.RData')
 
 varImpPlot(rf, type=1)
 
