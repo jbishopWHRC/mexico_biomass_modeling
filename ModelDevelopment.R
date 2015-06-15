@@ -1,19 +1,32 @@
-library(RPostgreSQL)
+#############################################################################
+# The code below will pull the data from a database if you have that set up.
+# Otherwise, use the read_csv function below.
+#library(RPostgreSQL)
+#con <- dbConnect(drv="PostgreSQL", host="database_host", user="database_user", dbname="database_name")
+#query <- "SELECT z.folio, z.carbono_arboles_tpha, z.date_distance, z.measurement_date, o.id_vegetac AS veg_type_id, o.vegetacion AS veg_type, CASE WHEN o.vegetacion IN ('Bosque de abies', 'Bosque de ayarin', 'Bosque de cedro', 'Bosque de pino', 'Bosque de tascate') THEN 'CF' WHEN o.vegetacion IN ('Bosque de encino', 'Bosque de galerÝa') THEN 'BF' WHEN o.vegetacion IN ('Bosque de encino-pino', 'Bosque de pino-encino') THEN 'CBF' WHEN o.vegetacion = 'Manglar' THEN 'MG' WHEN o.vegetacion IN ('Bosque mesofilo de monta±a', 'Selva alta perennifolia', 'Selva alta subperennifolia', 'Selva baja perennifolia', 'Selva baja subperennifolia', 'Selva mediana subperennifolia') THEN 'THF' WHEN o.vegetacion IN ('Selva baja caducifolia', 'Selva baja espinosa', 'Selva baja subcaducifolia', 'Selva mediana caducifolia', 'Selva mediana subcaducifolia') THEN 'TDF' ELSE 'ERROR' END AS type_code, o.ecosistema AS ecosystem, AVG(s.num_pixels) AS num_pixels, AVG(s.num_masked_pixels) AS num_masked_pixels, AVG(s.elev_mean) AS elev_mean, AVG(s.slope_mean) AS slope_mean, AVG(s.vcf_mean) AS vcf_mean, AVG(hh_mean) AS hh_mean, AVG(hv_mean) AS hv_mean, AVG(lsmask_mean) AS lsmask_mean, MIN(lsmask_min) AS lsmask_min, MAX(lsmask_max) AS lsmask_max, COUNT(alos_id) AS num_images FROM (SELECT b.folio, SUM(b.carbono_arboles) / 0.1598925 AS carbono_arboles_tpha, y.date_distance, MIN(b.levantamiento_fecha_ejecucion) AS measurement_date  FROM (SELECT folio, CASE WHEN MIN(date_distance) + MAX(date_distance) = 0 THEN MIN(date_distance) WHEN MIN(date_distance) + MAX(date_distance) > 0 THEN MIN(date_distance) ELSE MAX(date_distance) END AS date_distance FROM (SELECT folio, days_from_alos AS date_distance, COUNT(sitio) AS plot_count FROM mexico_biomass_plots_filtered WHERE NOT carbono_arboles IS NULL AND NOT levantamiento_fecha_ejecucion IS NULL AND folio IN (SELECT folio FROM mexico_biomass_plots_old) AND NOT tipificacion IN ('Inaccesible (pendiente)', 'Inaccesible (social)', 'Vacio', 'Planeado') GROUP BY folio, days_from_alos HAVING COUNT(sitio) = 4 ORDER BY folio) AS x GROUP BY folio) AS y INNER JOIN mexico_biomass_plots_filtered b ON b.folio=y.folio AND b.days_from_alos=y.date_distance GROUP BY b.folio, y.date_distance) AS z INNER JOIN mexico_biomass_plots_old o ON z.folio=o.folio INNER JOIN mexico_biomass_plots_model_statistics s ON z.folio=s.folio GROUP BY z.folio, z.carbono_arboles_tpha, z.date_distance, z.measurement_date, o.id_vegetac, o.vegetacion, o.ecosistema;"
+#d <- dbGetQuery(con, query)
+#############################################################################
+
 library(randomForest)
 library(sampling)
-con <- dbConnect(drv="PostgreSQL", host="pan.whrc.ad", user="jbishop", dbname="smddb")
-query <- "SELECT z.folio, z.carbono_arboles_tpha, z.date_distance, z.measurement_date, o.id_vegetac AS veg_type_id, o.vegetacion AS veg_type, CASE WHEN o.vegetacion IN ('Bosque de abies', 'Bosque de ayarin', 'Bosque de cedro', 'Bosque de pino', 'Bosque de tascate') THEN 'CF' WHEN o.vegetacion IN ('Bosque de encino', 'Bosque de galerÝa') THEN 'BF' WHEN o.vegetacion IN ('Bosque de encino-pino', 'Bosque de pino-encino') THEN 'CBF' WHEN o.vegetacion = 'Manglar' THEN 'MG' WHEN o.vegetacion IN ('Bosque mesofilo de monta±a', 'Selva alta perennifolia', 'Selva alta subperennifolia', 'Selva baja perennifolia', 'Selva baja subperennifolia', 'Selva mediana subperennifolia') THEN 'THF' WHEN o.vegetacion IN ('Selva baja caducifolia', 'Selva baja espinosa', 'Selva baja subcaducifolia', 'Selva mediana caducifolia', 'Selva mediana subcaducifolia') THEN 'TDF' ELSE 'ERROR' END AS type_code, o.ecosistema AS ecosystem, AVG(s.num_pixels) AS num_pixels, AVG(s.num_masked_pixels) AS num_masked_pixels, AVG(s.elev_mean) AS elev_mean, AVG(s.slope_mean) AS slope_mean, AVG(s.vcf_mean) AS vcf_mean, AVG(hh_mean) AS hh_mean, AVG(hv_mean) AS hv_mean, AVG(lsmask_mean) AS lsmask_mean, MIN(lsmask_min) AS lsmask_min, MAX(lsmask_max) AS lsmask_max, COUNT(alos_id) AS num_images FROM (SELECT b.folio, SUM(b.carbono_arboles) / 0.1598925 AS carbono_arboles_tpha, y.date_distance, MIN(b.levantamiento_fecha_ejecucion) AS measurement_date  FROM (SELECT folio, CASE WHEN MIN(date_distance) + MAX(date_distance) = 0 THEN MIN(date_distance) WHEN MIN(date_distance) + MAX(date_distance) > 0 THEN MIN(date_distance) ELSE MAX(date_distance) END AS date_distance FROM (SELECT folio, days_from_alos AS date_distance, COUNT(sitio) AS plot_count FROM mexico_biomass_plots_filtered WHERE NOT carbono_arboles IS NULL AND NOT levantamiento_fecha_ejecucion IS NULL AND folio IN (SELECT folio FROM mexico_biomass_plots_old) AND NOT tipificacion IN ('Inaccesible (pendiente)', 'Inaccesible (social)', 'Vacio', 'Planeado') GROUP BY folio, days_from_alos HAVING COUNT(sitio) = 4 ORDER BY folio) AS x GROUP BY folio) AS y INNER JOIN mexico_biomass_plots_filtered b ON b.folio=y.folio AND b.days_from_alos=y.date_distance GROUP BY b.folio, y.date_distance) AS z INNER JOIN mexico_biomass_plots_old o ON z.folio=o.folio INNER JOIN mexico_biomass_plots_model_statistics s ON z.folio=s.folio GROUP BY z.folio, z.carbono_arboles_tpha, z.date_distance, z.measurement_date, o.id_vegetac, o.vegetacion, o.ecosistema;"
-d <- dbGetQuery(con, query)
+# Set your working directory and read the training data csv
+setwd('/Users/jbishop/Documents/Projects/858_MREDD/Workshops/201506_Biomass_CONAFOR/mexico_biomass_modeling')
+d <- read.csv('workshop_training_data.csv')
+
 
 # Take a look at the relationships
 plot(d$carbono_arboles_tpha, d$hv_mean)
 plot(d$carbono_arboles_tpha, d$vcf_mean)
 
 ## Data Filtering
-# Remove steep slopes
+# Remove plots with steep slopes
 sub <- subset(d, slope_mean < 15) # degrees (or 15%)
-# Remove layover/shadow
+# Remove plots with layover/shadow
 sub <- subset(sub, lsmask_mean = 0)
+# Remove plots with 0 carbon
+sub <- subset(sub, carbono_arboles_tpha != 0)
+# Remove plots where VCF data didn't cover the whole plot (cloud, shadow, water, etc)
+sub <- subset(sub, sub$num_pixels == sub$num_masked_pixels)
 
 # Take a look at the relationships
 plot(sub$carbono_arboles_tpha, sub$hv_mean)
@@ -49,7 +62,7 @@ sub <- subset(sub, ! folio %in% f)
 plot(sub$carbono_arboles_tpha, sub$hv_mean)
 plot(sub$carbono_arboles_tpha, sub$vcf_mean)
 
-# Split out testing and training - TC START
+# Split out testing and training
 # Define carbon classes in 10 t/ha increments (rounding up to nearest 10)
 roundUp <- function(x,to=10) to*(x%/%to + as.logical(x%%to))
 maxC <- roundUp(max(sub$carbono_arboles_tpha))
