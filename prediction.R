@@ -40,7 +40,7 @@ predicted_carbon <- predict(rf,pred)
 # column names to it.
 out <- data.frame(segs$segment_id,round(predicted_carbon))
 names(out) <- c("segid","pred")
-options(scipen=10)
+options(scipen=10) # The number of digits before scientific notation (1e6) is used
 write.csv(out,file=outlut_csv,row.names=FALSE,quote=FALSE)
 
 ######################
@@ -59,12 +59,17 @@ img <- getValues(img.out)
 # Set the boundary segment to NA
 img[img == 0] <- NA
 
-# Make a vector by replacing segment ids with the prediction
+# Create a new vector by replacing segment ids with the prediction
 img.match <- as.integer(out$pred[match(img, out[,1])])
+
 # Set the no data value for the output
 img.match[is.na(img.match) == TRUE] <- 0 # Or some other value like -1
-# Set the values of the output raster
+
+# Set the values of the output raster (reusing the segment raster object from above)
 img.out <- setValues(img.out, img.match)
+
+# Set the datatype to byte
 dataType(img.out) <- 'INT1U'
-# Write out the image
-writeRaster(img.out, filename=out_raster, format="GTiff", datatype="INT1U", overwrite=T)
+
+# Write out the image (force datatype = Byte again.)
+writeRaster(img.out, filename=out_raster, format="GTiff", options="COMPRESS=DEFLATE", datatype="INT1U", overwrite=T)

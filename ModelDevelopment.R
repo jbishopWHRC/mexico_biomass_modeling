@@ -7,15 +7,16 @@
 #d <- dbGetQuery(con, query)
 #############################################################################
 
+
+# Load the libraries necessary for this script
 library(randomForest)
 library(sampling)
 # Set your working directory and read the training data csv
 setwd('/Users/jbishop/Documents/Projects/858_MREDD/Workshops/201506_Biomass_CONAFOR/mexico_biomass_modeling')
 d <- read.csv('workshop_training_data.csv')
-sub <- d
-dim(sub)[1]
+dim[d]
 
-# Take a look at the relationships
+# Plot at the relationships
 plot(d$carbono_arboles_tpha, d$hv_mean)
 plot(d$carbono_arboles_tpha, d$vcf_mean)
 
@@ -38,89 +39,102 @@ plot(sub$carbono_arboles_tpha, sub$hv_mean)
 plot(sub$carbono_arboles_tpha, sub$vcf_mean)
 
 
-# Remove the outliers
+## Remove the outliers by forest type for hv_mean and vcf_mean
 # Create a vector to hold the folios that will be removed
 f <- vector()
+
+# Loop over each forest type, create an exponential model and calculate the 
+# residuals. Then, remove any plots that are > 2 times the standard deviation.
+# Generate plots to illustrate the filtering
 for (i in unique(sub$type_code)){
-  s <- subset(sub, type_code == i)
-  plot(s$carbono_arboles_tpha, s$hv_mean, main=i, pch=19, col='grey')
-  m.hv <- lm(s$hv_mean ~ poly(s$carbono_arboles_tpha, 3))
-  s$pred_hv_mean <- predict(m.hv, poly(s$carbono_arboles_tpha, 3))
-  points(s$carbono_arboles_tpha, s$pred_hv_mean, col='red')
-  s$residual_hv <- resid(m.hv)
-  hv.std_dev <- sd(s$residual_hv)
-  s$remove_hv <- ifelse(s$residual_hv > 2 * hv.std_dev, TRUE, FALSE)
-  points(s$carbono_arboles_tpha[s$remove_hv != TRUE], s$hv_mean[s$remove_hv != TRUE], pch=21)
-  plot(s$carbono_arboles_tpha, s$vcf_mean, main=i, pch=19, col='grey')
-  m.vcf <- lm(s$vcf_mean ~ poly(s$carbono_arboles_tpha, 3))
-  s$pred_vcf_mean <- predict(m.vcf, poly(s$carbono_arboles_tpha, 3))
-  points(s$carbono_arboles_tpha, s$pred_vcf_mean, col='green')
-  s$residual_vcf <- resid(m.vcf)
-  vcf.std_dev <- sd(s$residual_vcf)
-  s$remove_vcf <- ifelse(s$residual_vcf > 2 * vcf.std_dev, TRUE, FALSE)
-  points(s$carbono_arboles_tpha[s$remove_vcf != TRUE], s$vcf_mean[s$remove_vcf != TRUE], pch=21)
-  f <- c(f, s$folio[s$remove_hv == TRUE | s$remove_vcf == TRUE])
+    print(i)
+    # Get the data for the current forest type
+    s <- subset(sub, type_code == i)
+    # Generate a polynomial model to fit the data.
+    m.hv <- lm(s$hv_mean ~ poly(s$carbono_arboles_tpha, 3))
+    # Predict the hv_mean using the model
+    s$pred_hv_mean <- predict(m.hv, poly(s$carbono_arboles_tpha, 3))
+    # Calculate the residuals from the model
+    s$residual_hv <- resid(m.hv)
+    # Calculate the standard deviation of the residuals
+    hv.std_dev <- sd(s$residual_hv)
+    # Add a column that indicates whether to remove the plot based on the 
+    # standard deviation threshold
+    s$remove_hv <- ifelse(s$residual_hv > 2 * hv.std_dev, TRUE, FALSE)
+    # Plot the data, the prediction, and the remaining plots after filtering
+    plot(s$carbono_arboles_tpha, s$hv_mean, main=i, pch=19, col='grey')
+    points(s$carbono_arboles_tpha, s$pred_hv_mean, col='red')
+    points(s$carbono_arboles_tpha[s$remove_hv != TRUE], s$hv_mean[s$remove_hv != TRUE], pch=21)
+
+    # Do the same for Tree Cover
+    m.vcf <- lm(s$vcf_mean ~ poly(s$carbono_arboles_tpha, 3))
+    s$pred_vcf_mean <- predict(m.vcf, poly(s$carbono_arboles_tpha, 3))
+    s$residual_vcf <- resid(m.vcf)
+    vcf.std_dev <- sd(s$residual_vcf)
+    s$remove_vcf <- ifelse(s$residual_vcf > 2 * vcf.std_dev, TRUE, FALSE)
+    plot(s$carbono_arboles_tpha, s$vcf_mean, main=i, pch=19, col='grey')
+    points(s$carbono_arboles_tpha, s$pred_vcf_mean, col='green')
+    points(s$carbono_arboles_tpha[s$remove_vcf != TRUE], s$vcf_mean[s$remove_vcf != TRUE], pch=21)
+
+    # Add the folios to be removed to the vector "f"
+    f <- c(f, s$folio[s$remove_hv == TRUE | s$remove_vcf == TRUE])
 }
 
+# Subset the plots, keeping the plots that are not in the vector of plots to
+# remove from the outlier analysis.
 sub <- subset(sub, ! folio %in% f)
 dim(sub)[1]
 
+# Plot the cleaned data
 plot(sub$carbono_arboles_tpha, sub$hv_mean)
 plot(sub$carbono_arboles_tpha, sub$vcf_mean)
 
-# Split out testing and training
 # Define carbon classes in 10 t/ha increments (rounding up to nearest 10)
-roundUp <- function(x,to=10) to*(x%/%to + as.logical(x%%to))
-maxC <- roundUp(max(sub$carbono_arboles_tpha))
-c.classes <- seq(from=0, to=maxC, by=10)
+sub$claseCarbona <- floor(sub$carbono_arboles_tpha / 10) * 10 + 10
 
-# For each class, assign field plots based on C value
-for (class in 1:(length(c.classes)-1)) {
-  sub$claseCarbona[sub$carbono_arboles_tpha >= c.classes[class] & sub$carbono_arboles_tpha < c.classes[class+1]] <- class*10
-}
-
-# Now combine type_code and claseCarbona into one field for ease of stratification (is this ok to do??)
+# Now combine type_code and claseCarbona into one field for ease of stratification
 sub$grp <- paste(sub$type_code, sub$claseCarbona, sep="_")
 
+## Define a function that will help us generate stratified samples for testing and training
 stratified = function(df, group, size) {
-  #  USE: * Specify your data frame and grouping variable (as column 
-  #         name) as the first two arguments.
-  #       * Decide on your sample size. For a sample proportional to the
-  #         population, enter "size" as a decimal. For an equal number 
-  #         of samples from each group, enter "size" as a whole number.
-  #
-  #  Example 1: Sample 10% of each group from a data frame named "z",
-  #             where the grouping variable column name is "nameGrpCol", use:
-  # 
-  #                 > stratified(z, "nameGrpCol", .1)
-  #
-  #  Example 2: Sample 5 observations from each group from a data frame
-  #             named "z"; grouping variable column name is "nameGrpCol", use:
-  #
-  #                 > stratified(z, "nameGrpCol", 5)
-  #
-  require(sampling)
-  
-  # column # for group
-  group <- which(names(df) %in% group, arr.ind = T)
-  temp = df[order(df[group]),]
-  # Calc # of samples per group
-  if (size < 1) {
-    nsamp = ceiling(table(temp[group]) * size)
-  } else if (size >= 1) {
-    nsamp = rep(size, times=length(table(temp[group])))
-  }  
-  # Select sample
-  strat = strata(temp, stratanames = names(temp[group]), 
-                 size = as.vector(nsamp), method = "srswor")
-  (dsample = getdata(temp, strat))
+    #  USE: * Specify your data frame and grouping variable (as column 
+    #         name) as the first two arguments.
+    #       * Decide on your sample size. For a sample proportional to the
+    #         population, enter "size" as a decimal. For an equal number 
+    #         of samples from each group, enter "size" as a whole number.
+    #
+    #  Example 1: Sample 10% of each group from a data frame named "z",
+    #             where the grouping variable column name is "nameGrpCol", use:
+    # 
+    #                 > stratified(z, "nameGrpCol", .1)
+    #
+    #  Example 2: Sample 5 observations from each group from a data frame
+    #             named "z"; grouping variable column name is "nameGrpCol", use:
+    #
+    #                 > stratified(z, "nameGrpCol", 5)
+    #
+    require(sampling)
+    
+    # column # for group
+    group <- which(names(df) %in% group, arr.ind = T)
+    temp = df[order(df[group]),]
+    # Calc # of samples per group
+    if (size < 1) {
+      nsamp = ceiling(table(temp[group]) * size)
+    } else if (size >= 1) {
+      nsamp = rep(size, times=length(table(temp[group])))
+    }  
+    # Select sample
+    strat = strata(temp, stratanames = names(temp[group]), 
+                   size = as.vector(nsamp), method = "srswor")
+    (dsample = getdata(temp, strat))
 }
 
 # Order sub first, even though it's done in the stratified function
 set.seed(5)
 #sub.ord <- sub[order(sub$grp),]
 sub.train <- stratified(sub, "grp", 0.8)
-sub.val <- sub[(row.names(sub) %in% row.names(sub.train))==F,]
+sub.val <- sub[(row.names(sub) %in% row.names(sub.train)) == FALSE,]
 
 attach(sub.val)
 val.stk <- data.frame(hh_mean, hv_mean, vcf_mean, elev_mean)
